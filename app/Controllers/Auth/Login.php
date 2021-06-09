@@ -32,8 +32,8 @@ class Login extends ResourceController
     ];
     $dataJson = $this->request->getJson();
     $data = [
-      'user_email' => htmlspecialchars($dataJson->user_email),
-      'user_password' => htmlspecialchars($dataJson->user_password),
+      'user_email' => htmlspecialchars($dataJson->user_email ?? ''),
+      'user_password' => htmlspecialchars($dataJson->user_password ?? ''),
     ];
     $validation->setRules($rules);
     if (!$validation->run($data)) {
@@ -41,14 +41,53 @@ class Login extends ResourceController
     }
     $user = $this->model->authenticate($data['user_email'], $data['user_password']);
     if ($user) {
-      $jwt = JWT::encode($user, env('appJWTKey'));
-      if ($user['role'] == 'Admin') {
-        $user['is_admin'] = true;
-      }
-      $user['token'] = $jwt;
+      helper('create_token');
+      $token = create_token($user);
+      $user['token'] = $token;
       return $this->respond(["status" => 1, "message" => "login berhasil", "data" => $user], 200);
     } else {
-      return $this->respond(["status" => 0, "message" => "username atau password salah", "data" => []], 400);
+      return $this->respond(["status" => 0, "message" => "email atau password salah", "data" => []], 400);
+    }
+  }
+  public function loginWithSocial()
+  {
+    $validation =  \Config\Services::validation();
+    $rules = [
+      'user_auth_key' => [
+        'label'  => 'Social Key',
+        'rules'  => 'required',
+        'errors' => [
+          'required' => '{field} tidak boleh kosong',
+        ]
+      ],
+      'auth_tipe' => [
+        'label'  => 'Tipe Social',
+        'rules'  => 'required',
+        'errors' => [
+          'required' => '{field} tidak boleh kosong',
+        ]
+      ],
+    ];
+    $dataJson = $this->request->getJson();
+    $data = [
+      'user_auth_key' => htmlspecialchars(urldecode($dataJson->user_auth_key ?? "")),
+      'auth_tipe' => htmlspecialchars($dataJson->auth_tipe ?? ""),
+    ];
+    $validation->setRules($rules);
+    if (!$validation->run($data)) {
+      return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+    }
+    if (!$this->model->sosialList($data['auth_tipe'])) {
+      return $this->respond(["status" => 0, "message" => "kunci salah", "data" => []], 400);
+    }
+    $user = $this->model->authenticateWithSocial($data['user_auth_key'], $data['auth_tipe']);
+    if ($user) {
+      helper('create_token');
+      $token = create_token($user);
+      $user['token'] = $token;
+      return $this->respond(["status" => 1, "message" => "login berhasil", "data" => $user], 200);
+    } else {
+      return $this->respond(["status" => 0, "message" => "kunci salah", "data" => []], 400);
     }
   }
 }

@@ -1,7 +1,6 @@
 <?php
 
 namespace Config;
-
 // Create a new instance of our RouteCollection class.
 $routes = Services::routes();
 
@@ -33,21 +32,59 @@ $routes->setAutoRoute(false);
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
 $routes->group('auth', ['namespace' => '\App\Controllers\Auth'], function ($routes) {
-	$routes->post('', 'Login::index');
-	$routes->get('profile', 'Profile::index', ['filter' => 'auth']);
-	$routes->put('profile', 'Profile::ubah', ['filter' => 'auth']);
-	$routes->put('ubah_password', 'UbahPassword::index', ['filter' => 'auth']);
-	$routes->put('ubah_fcm_token', 'UbahFcmToken::index', ['filter' => 'auth']);
-	$routes->put('ubah_auth_key', 'UbahAuthKey::index', ['filter' => 'auth']);
+	$routes->group('login', function ($routes) {
+		$routes->post('', 'Login::index');
+		$routes->post('with_social', 'Login::loginWithSocial');
+	});
 	$routes->group('lupa_password', function ($routes) {
 		$routes->post('', 'LupaPassword::index');
-		$routes->post('cek_kode', 'LupaPassword::cek_kode');
-		$routes->post('ubah_password', 'LupaPassword::ubah_password');
+		$routes->post('cek_kode', 'LupaPassword::cekKode');
+		$routes->post('ubah_password', 'LupaPassword::ubahPassword');
 	});
 	$routes->group('notifications', ['namespace' => '\App\Controllers\Auth', 'filter' => 'auth'], function ($routes) {
 		$routes->get('', 'Notifications::index');
 		$routes->get('baca_semua', 'Notifications::baca_semua');
 		$routes->get('baca/(:num)', 'Notifications::baca/$1');
+	});
+});
+$routes->group('user', ['filter' => 'auth', 'namespace' => '\App\Controllers\User'], function ($routes) {
+	$routes->group('profile', function ($routes) {
+		$routes->get('', 'Profile::index');
+		$routes->get('cek_token', function () {
+			$response = service('response');
+			$response->setStatusCode(200);
+			$response->setBody(json_encode(["status" => 1, "message" => "token_aktif", "data" => []]));
+			$response->setHeader('Content-type', 'application/json');
+			return $response;
+		});
+		$routes->put('', 'Profile::ubah');
+		$routes->put('ubah_password', 'Profile::ubahPassword');
+		$routes->post('fcm', 'Fcm::index');
+	});
+	$routes->group('notification', function ($routes) {
+		$routes->get('', 'Notifications::index');
+		$routes->get('baca_semua', 'Notifications::baca_semua');
+		$routes->get('baca/(:num)', 'Notifications::baca/$1');
+	});
+});
+$routes->group('setting', ['filter' => 'auth'], function ($routes) {
+	$routes->get('', 'Settings::index');
+	$routes->put('', 'Settings::update_setting', ['filter' => 'auth:admin']);
+});
+$routes->group('booking', ['filter' => 'auth'], function ($routes) {
+	$routes->get('', 'Booking::index');
+	$routes->get('detail/(:any)', 'Booking::detail/$1');
+	$routes->post('', 'Booking::create');
+	$routes->post('batalkan/(:any)', 'Booking::batalkan/$1');
+	// $routes->put('', 'Booking::update_setting', ['filter' => 'auth:admin']);
+});
+$routes->group('admin', ['filter' => 'auth:admin', 'namespace' => '\App\Controllers\Admin'], function ($routes) {
+	$routes->group('booking', function ($routes) {
+		$routes->get('', 'Booking::index');
+		$routes->get('detail/(:any)', 'Booking::detail/$1');
+		$routes->post('konfirmasi/(:any)', 'Booking::konfirmasi/$1');
+		$routes->post('laporan', 'Booking::laporan');
+		// $routes->put('', 'Booking::update_setting', ['filter' => 'auth:admin']);
 	});
 });
 

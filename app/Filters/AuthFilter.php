@@ -19,12 +19,16 @@ class AuthFilter implements FilterInterface
             $response->setHeader('Content-type', 'application/json');
             return $response;
         }
+        $decoded = "";
+        $uriSegments = $request->getUri()->getSegments();
         try {
             $jwt = explode("Bearer ", $request->getHeader('Authorization')->getValue())[1];
             $decoded = JWT::decode($jwt, env("appJWTKey"), array('HS256'));
             $userModel = new UsersModel();
             $user = $userModel->getUserByEmail($decoded->user_email);
-            unset($user['user_password']);
+            if (empty($uriSegments[2] ?? "") && ($uriSegments[2] ?? "") !== 'ubah_password') {
+                unset($user['user_password']);
+            }
             unset($user['user_created_at']);
             unset($user['user_updated_at']);
             unset($user['user_g_auth_key']);
@@ -35,9 +39,25 @@ class AuthFilter implements FilterInterface
                     throw new \Exception();
                 }
             }
+        } catch (\Firebase\JWT\ExpiredException $th) {
+            if (isset($uriSegments[2]) && $uriSegments[2] !== 'refresh_token') {
+                $jwt = explode("Bearer ", $request->getHeader('Authorization')->getValue())[1];
+                helper('create_token');
+                $refresh_token = create_by_jwt($jwt);
+                $response->setStatusCode(200);
+                $response->setBody(json_encode(["status" => 1, "message" => "update_token", "data" => ['token' => $refresh_token]]));
+                $response->setHeader('Content-type', 'application/json');
+                return $response;
+            } else {
+                $response->setStatusCode(401);
+                $response->setBody(json_encode(["status" => 0, "message" => "unathorized", "data" => []]));
+                $response->setHeader('Content-type', 'application/json');
+                return $response;
+            }
+            return $response;
         } catch (\Exception $th) {
             $response->setStatusCode(401);
-            $response->setBody(json_encode(["status" => 0, "message" => $th->getMessage(), "data" => []]));
+            $response->setBody(json_encode(["status" => 0, "message" => "unathorized", "data" => []]));
             $response->setHeader('Content-type', 'application/json');
             return $response;
         }

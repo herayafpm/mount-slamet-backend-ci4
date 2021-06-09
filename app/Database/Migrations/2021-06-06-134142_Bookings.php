@@ -4,16 +4,21 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class Users extends Migration
+class Bookings extends Migration
 {
 	public function up()
 	{
 		$this->forge->addField([
-			'user_id'          => [
-				'type'           => 'INT',
+			'booking_id' => [
+				'type' => 'INT',
 				'constraint'     => 11,
-				'unsigned'       => true,
+				'unsigned'          => TRUE,
 				'auto_increment' => true,
+			],
+			'booking_no_order' => [
+				'type' => 'VARCHAR',
+				'constraint'     => '255',
+				'unique'				=> true
 			],
 			'user_nama'       => [
 				'type'           => 'VARCHAR',
@@ -22,7 +27,6 @@ class Users extends Migration
 			'user_email'       => [
 				'type'           => 'VARCHAR',
 				'constraint'     => '255',
-				'unique' 		 => true,
 			],
 			'user_alamat'       => [
 				'type'           => 'TEXT',
@@ -37,30 +41,44 @@ class Users extends Migration
 				'constraint'     => '255',
 				'null'			=> true,
 			],
-			'role' => [
-				'type' => 'INT',
-				'constraint'     => 11,
-				'unsigned'          => TRUE,
-			],
-			'user_password'       => [
-				'type'           => 'VARCHAR',
+			'booking_nama' => [
+				'type' => 'VARCHAR',
 				'constraint'     => '255',
 			],
-			'user_created_at'       => [
-				'type'           => 'TIMESTAMP',
-				'default' => date('Y-m-d H:i:s')
+			'booking_alamat' => [
+				'type' => 'TEXT',
 			],
-			'user_updated_at'       => [
+			'booking_no_telp' => [
+				'type' => 'VARCHAR',
+				'constraint'     => '255',
+			],
+			'booking_jml_anggota' => [
+				'type' => 'INT',
+				'constraint'     => 11,
+				'default' => 1
+			],
+			'booking_tgl_masuk'       => [
+				'type'           => 'TIMESTAMP',
+			],
+			'booking_tgl_keluar'       => [
+				'type'           => 'TIMESTAMP',
+			],
+			'booking_status' => [
+				'type' => 'INT',
+				'constraint'     => 1,
+				'default' => 0
+			],
+			'booking_created'       => [
 				'type'           => 'TIMESTAMP',
 				'default' => date('Y-m-d H:i:s')
 			],
 		]);
-		$this->forge->addKey('user_id', true);
-		$this->forge->createTable('users');
+		$this->forge->addKey('booking_id', true);
+		$this->forge->createTable('bookings');
 	}
 
 	public function down()
 	{
-		$this->forge->dropTable('users');
+		$this->forge->dropTable('bookings');
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Auth;
+namespace App\Controllers\User;
 
 use CodeIgniter\RESTful\ResourceController;
 
@@ -16,13 +16,13 @@ class Notifications extends ResourceController
     $dataGet = $this->request->getGet();
     $limit = $dataGet["limit"] ?? 10;
     $offset = $dataGet["offset"] ?? 0;
-    $notifs = $this->model->filter($limit, $offset, ['where' => ['user_id' => $user->user_id]]);
-    return $this->respond(["status" => 1, "message" => "berhasil mengupdate notifications", "data" => $notifs], 200);
+    $notifs = $this->model->filter($limit, $offset, ['where' => ['user_id' => $user['user_id']]]);
+    return $this->respond(["status" => 1, "message" => "berhasil mendapatkan semua notif", "data" => $notifs], 200);
   }
   public function baca_semua()
   {
     $user = $this->request->user;
-    $baca = $this->model->baca_semua($user->user_id);
+    $baca = $this->model->baca_semua($user['user_email']);
     if ($baca) {
       return $this->respond(["status" => 1, "message" => "berhasil membaca semua notif", "data" => []], 200);
     } else {
@@ -31,7 +31,8 @@ class Notifications extends ResourceController
   }
   public function baca($id = null)
   {
-    $baca = $this->model->baca($id);
+    $user = $this->request->user;
+    $baca = $this->model->baca($id, $user['user_email']);
     if ($baca) {
       return $this->respond(["status" => 1, "message" => "berhasil membaca notif", "data" => []], 200);
     } else {
