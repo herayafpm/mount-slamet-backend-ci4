@@ -121,7 +121,7 @@ class Booking extends ResourceController
         $booking_no_order = urldecode($booking_no_order);
         $booking = $this->model->where(['user_email' => $user['user_email'], 'booking_no_order' => $booking_no_order])->first();
         if (!$booking) {
-            return $this->respond(["status" => 1, "message" => "booking tidak ditemukan", "data" => []], 200);
+            return $this->respond(["status" => 0, "message" => "booking tidak ditemukan", "data" => []], 400);
         }
         if ($booking['booking_status'] == 2) {
             return $this->respond(["status" => 1, "message" => "booking sudah dibatalkan", "data" => []], 200);
