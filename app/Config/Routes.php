@@ -67,15 +67,17 @@ $routes->group('user', ['filter' => 'auth', 'namespace' => '\App\Controllers\Use
 		$routes->get('baca/(:num)', 'Notifications::baca/$1');
 	});
 });
-$routes->group('setting', ['filter' => 'auth'], function ($routes) {
+$routes->group('setting', ['filter' => 'auth:admin'], function ($routes) {
 	$routes->get('', 'Settings::index');
-	$routes->put('', 'Settings::update_setting', ['filter' => 'auth:admin']);
+	$routes->put('', 'Settings::update_setting');
 });
 $routes->group('booking', ['filter' => 'auth'], function ($routes) {
 	$routes->get('', 'Booking::index');
 	$routes->get('detail/(:any)', 'Booking::detail/$1');
 	$routes->post('', 'Booking::create');
 	$routes->post('batalkan/(:any)', 'Booking::batalkan/$1');
+	$routes->get('hari_ini', 'Booking::bookingHariIni');
+	$routes->post('cek_ketersediaan', 'Booking::CekKetersediaan');
 	// $routes->put('', 'Booking::update_setting', ['filter' => 'auth:admin']);
 });
 $routes->group('admin', ['filter' => 'auth:admin', 'namespace' => '\App\Controllers\Admin'], function ($routes) {

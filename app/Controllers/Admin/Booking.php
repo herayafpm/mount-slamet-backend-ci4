@@ -80,6 +80,7 @@ class Booking extends ResourceController
             header('Content-Type: application/pdf');
             header("Content-Transfer-Encoding: Binary");
             header("Content-disposition: attachment; filename=\"" . $file_name . "\"");
+            header("Filename: $file_name");
             return $output;
         } else {
             return $this->respond(["status" => 0, "message" => "tanggal awal harus kurang atau sama dengan dari tanggal akhir", "data" => []], 200);

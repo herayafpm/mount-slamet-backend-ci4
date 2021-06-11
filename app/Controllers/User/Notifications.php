@@ -16,7 +16,7 @@ class Notifications extends ResourceController
     $dataGet = $this->request->getGet();
     $limit = $dataGet["limit"] ?? 10;
     $offset = $dataGet["offset"] ?? 0;
-    $notifs = $this->model->filter($limit, $offset, ['where' => ['user_id' => $user['user_id']]]);
+    $notifs = $this->model->filter($limit, $offset, ['where' => ['user_email' => $user['user_email']]]);
     return $this->respond(["status" => 1, "message" => "berhasil mendapatkan semua notif", "data" => $notifs], 200);
   }
   public function baca_semua()

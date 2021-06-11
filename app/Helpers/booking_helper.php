@@ -9,6 +9,9 @@ function cek_ketersediaan(int $jumlah, $tgl_masuk, $tgl_keluar)
     $jumlah_pendaki = (int) $setting_model->select('setting_value')->where('setting_key', 'jumlah_pendaki')->first()['setting_value'];
     $tgl_masuk = date("Y-m-d", strtotime($tgl_masuk));
     $tgl_keluar = date("Y-m-d", strtotime($tgl_keluar));
+    if ($tgl_keluar < $tgl_masuk || $tgl_masuk > $tgl_keluar) {
+        throw new \Exception("Maaf Tanggal keluar harus lebih dari tgl masuk");
+    }
     helper('my_date');
     $dates = displayDates($tgl_masuk, $tgl_keluar);
     $booking_seat_model = new BookingSeatsModel();
@@ -22,7 +25,7 @@ function cek_ketersediaan(int $jumlah, $tgl_masuk, $tgl_keluar)
                 throw new \Exception("Maaf Tanggal {$d_text} sudah penuh");
             }
             if (($jml - $jumlah) < 0) {
-                throw new \Exception("Maaf Tanggal {$d_text} hanya tersisa {$jml} slot");
+                throw new \Exception("Maaf Tanggal {$d_text} hanya tersisa {$jml} orang");
             }
         }
     }

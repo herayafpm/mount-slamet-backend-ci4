@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\BookingSeatsModel;
+use App\Models\SettingsModel;
 use App\Models\UsersModel;
 use CodeIgniter\RESTful\ResourceController;
 
@@ -136,6 +138,74 @@ class Booking extends ResourceController
             return $this->respond(["status" => 1, "message" => "berhasil membatalkan booking", "data" => []], 200);
         } else {
             return $this->respond(["status" => 0, "message" => "gagal membatalkan booking", "data" => []], 400);
+        }
+    }
+    public function bookingHariIni()
+    {
+        $booking_seat_model = new BookingSeatsModel();
+        $setting_model = new SettingsModel();
+        $booking_seat = $booking_seat_model->where(['booking_seat_tgl' => date("Y-m-d") . " 00:00:00"])->first();
+        $jumlah_pendaki = $setting_model->where(['setting_key' => 'jumlah_pendaki'])->first()['setting_value'];
+        $sisa_seat = 0;
+        $jumlah_booking = 0;
+        if ($booking_seat) {
+            $sisa_seat = (int)$jumlah_pendaki - (int) $booking_seat['booking_seat_jml'];
+            $jumlah_booking = (int) $booking_seat['booking_seat_jml'];
+        }
+        return $this->respond(["status" => 1, "message" => "Ketersediaan hari ini", "data" => ['jumlah_booking' => $jumlah_booking, 'sisa_seat' => $sisa_seat, 'jumlah_pendaki' => (int)$jumlah_pendaki]], 200);
+    }
+    public function cekKetersediaan()
+    {
+        $validation =  \Config\Services::validation();
+        $dataJson = $this->request->getJson();
+        $data = [
+            'booking_jml_anggota' => htmlspecialchars($dataJson->booking_jml_anggota ?? ''),
+            'booking_tgl_masuk' => htmlspecialchars($dataJson->booking_tgl_masuk ?? ''),
+            'booking_tgl_keluar' => htmlspecialchars($dataJson->booking_tgl_keluar ?? ''),
+        ];
+        $rules = [
+            'booking_jml_anggota' => [
+                'label'  => 'Jumlah Anggota',
+                'rules'  => 'required',
+                'errors' => [
+                    'required' => '{field} tidak boleh kosong',
+                ]
+            ],
+            'booking_tgl_masuk' => [
+                'label'  => 'Tanggal Masuk',
+                'rules'  => "required",
+                'errors' => [
+                    'required' => '{field} tidak boleh kosong',
+                ]
+            ],
+            'booking_tgl_keluar' => [
+                'label'  => 'Tanggal Keluar',
+                'rules'  => "required",
+                'errors' => [
+                    'required' => '{field} tidak boleh kosong',
+                ]
+            ],
+        ];
+
+        $validation->setRules($rules);
+        if (!$validation->run($data)) {
+            return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+        }
+        helper('locale');
+        $tgl_masuk_text = tgl_indo($data['booking_tgl_masuk'] ?? "");
+        $tgl_keluar_text = tgl_indo($data['booking_tgl_keluar'] ?? "");
+        try {
+            helper("booking");
+            cek_ketersediaan((int)$data['booking_jml_anggota'], $data['booking_tgl_masuk'], $data['booking_tgl_keluar']);
+            $message = "tersedia untuk tanggal ";
+            if ($data['booking_tgl_masuk'] == $data['booking_tgl_keluar']) {
+                $message .= $tgl_masuk_text;
+            } else {
+                $message .= "{$tgl_masuk_text} sampai {$tgl_keluar_text}";
+            }
+            return $this->respond(["status" => 1, "message" => $message, "data" => []], 200);
+        } catch (\Exception $th) {
+            return $this->respond(["status" => 0, "message" => $th->getMessage(), "data" => []], 400);
         }
     }
 }
