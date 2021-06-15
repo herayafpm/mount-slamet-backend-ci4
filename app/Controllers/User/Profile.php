@@ -14,7 +14,7 @@ class Profile extends ResourceController
   {
     $user = $this->request->user;
     unset($user['user_id']);
-    return $this->respond(['status' => 1, "message" => "berhasil mengambil profile", 'data' => $user], 200);
+    return $this->respond(['status' => true, "message" => "berhasil mengambil profile", 'data' => $user], 200);
   }
   public function ubah()
   {
@@ -69,7 +69,7 @@ class Profile extends ResourceController
     ];
     $validation->setRules($updateProfileRule);
     if (!$validation->run($data)) {
-      return $this->respond(["status" => 0, "message" => "validasi error", "data" => $validation->getErrors()], 400);
+      return $this->respond(["status" => false, "message" => "validasi error", "data" => $validation->getErrors()], 200);
     }
     if ($user['is_admin']) {
       unset($data['user_nama']);
@@ -78,9 +78,9 @@ class Profile extends ResourceController
     if ($update) {
       $user = array_merge($user, $data);
       unset($user['user_id']);
-      return $this->respond(["status" => 1, "message" => "Berhasil mengupdate profile", "data" => $user], 200);
+      return $this->respond(["status" => true, "message" => "Berhasil mengupdate profile", "data" => $user], 200);
     } else {
-      return $this->respond(["status" => 0, "message" => "Gagal mengupdate profile", "data" => []], 400);
+      return $this->respond(["status" => false, "message" => "Gagal mengupdate profile", "data" => []], 200);
     }
   }
   public function ubahPassword()
@@ -103,16 +103,16 @@ class Profile extends ResourceController
     ];
     $validation->setRules($rules);
     if (!$validation->run($data)) {
-      return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+      return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
     }
     if (password_verify($data['user_password'], $user['user_password'])) {
-      return $this->respond(["status" => 0, "message" => "password tidak boleh sama dengan yang sebelumnya, gunakan yang lain", "data" => []], 400);
+      return $this->respond(["status" => false, "message" => "password tidak boleh sama dengan yang sebelumnya, gunakan yang lain", "data" => []], 200);
     }
     $update = $this->model->update($user['user_id'], $data);
     if ($update) {
-      return $this->respond(["status" => 1, "message" => "berhasil mengubah password", "data" => []], 200);
+      return $this->respond(["status" => true, "message" => "berhasil mengubah password", "data" => []], 200);
     } else {
-      return $this->respond(["status" => 0, "message" => "gagal mengubah password", "data" => []], 400);
+      return $this->respond(["status" => false, "message" => "gagal mengubah password", "data" => []], 200);
     }
   }
 }

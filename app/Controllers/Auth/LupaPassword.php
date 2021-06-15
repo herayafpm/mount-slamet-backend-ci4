@@ -29,7 +29,7 @@ class LupaPassword extends ResourceController
     ];
     $validation->setRules($rules);
     if (!$validation->run($data)) {
-      return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+      return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
     }
     $usersModel = new UsersModel();
     $user = $usersModel->getUserByEmail($data['user_email']);
@@ -39,7 +39,7 @@ class LupaPassword extends ResourceController
       helper('my_email');
       $send = sendEmail("Lupa Kata Sandi", $data['user_email'], view('emails/lupa_password_email', $data));
     }
-    return $this->respond(["status" => 1, "message" => "silahkan cek email {$data['user_email']}, di kotak pesan atau spam, untuk verifikasi lebih lanjut, jika email anda sudah terdaftar di sistem kami", "data" => ['user_email' => $data['user_email']]], 200);
+    return $this->respond(["status" => true, "message" => "silahkan cek email {$data['user_email']}, di kotak pesan atau spam, untuk verifikasi lebih lanjut, jika email anda sudah terdaftar di sistem kami", "data" => ['user_email' => $data['user_email']]], 200);
   }
   public function cekKode()
   {
@@ -68,9 +68,9 @@ class LupaPassword extends ResourceController
     ];
     $validation->setRules($rules);
     if (!$validation->run($data)) {
-      return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+      return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
     }
-    return $this->respond(["status" => 1, "message" => "kode otp benar", "data" => $data], 200);
+    return $this->respond(["status" => true, "message" => "kode otp benar", "data" => $data], 200);
   }
   public function ubahPassword()
   {
@@ -108,15 +108,15 @@ class LupaPassword extends ResourceController
     ];
     $validation->setRules($rules);
     if (!$validation->run($data)) {
-      return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+      return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
     }
     $usersModel = new UsersModel();
     $ubah = $usersModel->setPassword($data['user_email'], $data['user_password']);
     if ($ubah) {
       $this->model->deleteLupaPassword($data['user_email']);
-      return $this->respond(["status" => 1, "message" => "berhasil mengubah password, silahkan login", "data" => []], 200);
+      return $this->respond(["status" => true, "message" => "berhasil mengubah password, silahkan login", "data" => []], 200);
     } else {
-      return $this->respond(["status" => 0, "message" => "gagal mengubah password, silahkan coba lagi", "data" => []], 200);
+      return $this->respond(["status" => false, "message" => "gagal mengubah password, silahkan coba lagi", "data" => []], 200);
     }
   }
 }

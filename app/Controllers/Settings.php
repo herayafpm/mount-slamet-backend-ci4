@@ -22,7 +22,7 @@ class Settings extends ResourceController
             });
             $settings = $this->model->select(implode(",", $fields))->where(['setting_role' => $user['role']])->findAll();
         }
-        return $this->respond(["status" => 1, "message" => "berhasil mendapatkan setting", "data" => $settings], 200);
+        return $this->respond(["status" => true, "message" => "berhasil mendapatkan setting", "data" => $settings], 200);
     }
     public function update_setting()
     {
@@ -51,13 +51,13 @@ class Settings extends ResourceController
         ];
         $validation->setRules($rules);
         if (!$validation->run($data)) {
-            return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+            return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
         }
         $update = $this->model->where(['setting_key' => $data['setting_key']])->set($data)->update();
         if ($update) {
-            return $this->respond(["status" => 1, "message" => "Berhasil mengupdate setting", "data" => []], 200);
+            return $this->respond(["status" => true, "message" => "Berhasil mengupdate setting", "data" => []], 200);
         } else {
-            return $this->respond(["status" => 0, "message" => "gagal mengupdate setting", "data" => []], 400);
+            return $this->respond(["status" => false, "message" => "gagal mengupdate setting", "data" => []], 200);
         }
     }
 }

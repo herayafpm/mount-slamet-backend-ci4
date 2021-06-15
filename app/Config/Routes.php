@@ -41,11 +41,7 @@ $routes->group('auth', ['namespace' => '\App\Controllers\Auth'], function ($rout
 		$routes->post('cek_kode', 'LupaPassword::cekKode');
 		$routes->post('ubah_password', 'LupaPassword::ubahPassword');
 	});
-	$routes->group('notifications', ['namespace' => '\App\Controllers\Auth', 'filter' => 'auth'], function ($routes) {
-		$routes->get('', 'Notifications::index');
-		$routes->get('baca_semua', 'Notifications::baca_semua');
-		$routes->get('baca/(:num)', 'Notifications::baca/$1');
-	});
+	$routes->post('register', 'Register::index');
 });
 $routes->group('user', ['filter' => 'auth', 'namespace' => '\App\Controllers\User'], function ($routes) {
 	$routes->group('profile', function ($routes) {

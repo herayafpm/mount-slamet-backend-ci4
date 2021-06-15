@@ -23,9 +23,10 @@ class Register extends ResourceController
             ],
             'user_email' => [
                 'label'  => 'Email',
-                'rules'  => 'required',
+                'rules'  => 'required|is_unique[users.user_email]',
                 'errors' => [
                     'required' => '{field} tidak boleh kosong',
+                    'is_unique' => '{field} sudah terdaftar.'
                 ]
             ],
             'user_password' => [
@@ -45,13 +46,13 @@ class Register extends ResourceController
         ];
         $validation->setRules($rules);
         if (!$validation->run($data)) {
-            return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+            return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
         }
         $create = $this->model->register($data);
         if ($create) {
-            return $this->respond(["status" => 1, "message" => "Berhasil mendaftar", "data" => ['create' => true]], 200);
+            return $this->respond(["status" => true, "message" => "Berhasil mendaftar silahkan login", "data" => ['create' => true]], 200);
         } else {
-            return $this->respond(["status" => 0, "message" => "gagal mendaftar", "data" => []], 400);
+            return $this->respond(["status" => false, "message" => "gagal mendaftar, silahkan coba kembali", "data" => []], 200);
         }
     }
 }

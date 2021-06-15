@@ -29,18 +29,18 @@ class Fcm extends ResourceController
     ];
     $validation->setRules($rules);
     if (!$validation->run($data)) {
-      return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+      return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
     }
     $data['user_email'] = $user['user_email'];
     $fcm_exist = $this->model->where($data)->findColumn('user_email');
     if ($fcm_exist) {
-      return $this->respond(["status" => 1, "message" => "tidak ada perubahan fcm token", "data" => []], 200);
+      return $this->respond(["status" => true, "message" => "tidak ada perubahan fcm token", "data" => []], 200);
     }
     $create = $this->model->save($data);
     if ($create) {
-      return $this->respond(["status" => 1, "message" => "berhasil menambah fcm token", "data" => []], 200);
+      return $this->respond(["status" => true, "message" => "berhasil menambah fcm token", "data" => []], 200);
     } else {
-      return $this->respond(["status" => 0, "message" => "gagal menambah fcm token", "data" => []], 400);
+      return $this->respond(["status" => false, "message" => "gagal menambah fcm token", "data" => []], 200);
     }
   }
 }

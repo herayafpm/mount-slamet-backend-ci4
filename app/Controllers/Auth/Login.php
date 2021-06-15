@@ -37,16 +37,16 @@ class Login extends ResourceController
     ];
     $validation->setRules($rules);
     if (!$validation->run($data)) {
-      return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+      return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
     }
     $user = $this->model->authenticate($data['user_email'], $data['user_password']);
     if ($user) {
       helper('create_token');
       $token = create_token($user);
       $user['token'] = $token;
-      return $this->respond(["status" => 1, "message" => "login berhasil", "data" => $user], 200);
+      return $this->respond(["status" => true, "message" => "login berhasil", "data" => $user], 200);
     } else {
-      return $this->respond(["status" => 0, "message" => "email atau password salah", "data" => []], 400);
+      return $this->respond(["status" => false, "message" => "email atau password salah", "data" => []], 200);
     }
   }
   public function loginWithSocial()
@@ -75,19 +75,19 @@ class Login extends ResourceController
     ];
     $validation->setRules($rules);
     if (!$validation->run($data)) {
-      return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+      return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
     }
     if (!$this->model->sosialList($data['auth_tipe'])) {
-      return $this->respond(["status" => 0, "message" => "kunci salah", "data" => []], 400);
+      return $this->respond(["status" => false, "message" => "kunci salah", "data" => []], 200);
     }
     $user = $this->model->authenticateWithSocial($data['user_auth_key'], $data['auth_tipe']);
     if ($user) {
       helper('create_token');
       $token = create_token($user);
       $user['token'] = $token;
-      return $this->respond(["status" => 1, "message" => "login berhasil", "data" => $user], 200);
+      return $this->respond(["status" => true, "message" => "login berhasil", "data" => $user], 200);
     } else {
-      return $this->respond(["status" => 0, "message" => "kunci salah", "data" => []], 400);
+      return $this->respond(["status" => false, "message" => "kunci salah", "data" => []], 200);
     }
   }
 }

@@ -32,14 +32,14 @@ function notif($user_emails, $title = "", $body = "", $data = ["foo" => "bar"])
         "headings" => ["en" => "Notifikasi " . config('app')->appName],
         "contents" => ["en" => $body],
         "subtitle" => ["en" => $body],
-        "large_icon" => base_url('') . "/assets/images/icon.png",
+        "large_icon" => "ic_stat_onesignal_default",
         "small_icon" => "ic_stat_onesignal_default",
-        "android_channel_id" => "f40acc7d-4380-41d3-be6e-3779e8ce04d5"
       ]
     ]);
   } catch (\Exception $th) {
     //throw $th;
-    // var_dump($th->getMessage());
+    var_dump($th->getMessage());
+    die();
   }
   // return $response;
 }

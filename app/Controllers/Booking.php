@@ -20,14 +20,14 @@ class Booking extends ResourceController
         $limit = $dataGet["limit"] ?? 10;
         $offset = $dataGet["offset"] ?? 0;
         $riwayat_booking = $this->model->filter($limit, $offset, ['where' => ['user_email' => $user['user_email']]]);
-        return $this->respond(["status" => 1, "message" => "berhasil mendapatkan semua booking", "data" => $riwayat_booking], 200);
+        return $this->respond(["status" => true, "message" => "berhasil mendapatkan semua booking", "data" => $riwayat_booking], 200);
     }
     public function detail($booking_no_order)
     {
         $user = $this->request->user;
         $booking = $this->model->where(['user_email' => $user['user_email'], 'booking_no_order' => $booking_no_order])->first();
         unset($booking['booking_id']);
-        return $this->respond(["status" => 1, "message" => "berhasil mendapatkan data booking", "data" => $booking], 200);
+        return $this->respond(["status" => true, "message" => "berhasil mendapatkan data booking", "data" => $booking], 200);
     }
     public function create()
     {
@@ -89,7 +89,7 @@ class Booking extends ResourceController
 
         $validation->setRules($rules);
         if (!$validation->run($data)) {
-            return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+            return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
         }
         helper('locale');
         $tgl_masuk_text = tgl_indo($data['booking_tgl_masuk'] ?? "");
@@ -98,7 +98,7 @@ class Booking extends ResourceController
             helper("booking");
             cek_ketersediaan((int)$data['booking_jml_anggota'], $data['booking_tgl_masuk'], $data['booking_tgl_keluar']);
         } catch (\Exception $th) {
-            return $this->respond(["status" => 0, "message" => $th->getMessage(), "data" => []], 400);
+            return $this->respond(["status" => false, "message" => $th->getMessage(), "data" => []], 200);
         }
         // $data['booking_status'] = 1;
         $user = $this->request->user;
@@ -110,34 +110,42 @@ class Booking extends ResourceController
             $user_model = new UsersModel();
             $user_emails = $user_model->where(['role' => 1])->findColumn('user_email');
             notif($user_emails, "Konfirmasi Booking", "{$booking['booking_no_order']}, tanggal {$tgl_masuk_text} sampai {$tgl_keluar_text} silahkan untuk melakukan konfirmasi.");
-            return $this->respond(["status" => 1, "message" => "Berhasil booking", "data" => []], 200);
+            return $this->respond(["status" => true, "message" => "Berhasil booking", "data" => []], 200);
         } else {
-            return $this->respond(["status" => 0, "message" => "gagal booking", "data" => []], 400);
+            return $this->respond(["status" => false, "message" => "gagal booking", "data" => []], 200);
         }
     }
     public function batalkan($booking_no_order)
     {
         $user = $this->request->user;
         $booking_no_order = urldecode($booking_no_order);
-        $booking = $this->model->where(['user_email' => $user['user_email'], 'booking_no_order' => $booking_no_order])->first();
+        if ($user['is_admin']) {
+            $booking = $this->model->where(['booking_no_order' => $booking_no_order])->first();
+        } else {
+            $booking = $this->model->where(['user_email' => $user['user_email'], 'booking_no_order' => $booking_no_order])->first();
+        }
         if (!$booking) {
-            return $this->respond(["status" => 0, "message" => "booking tidak ditemukan", "data" => []], 400);
+            return $this->respond(["status" => false, "message" => "booking tidak ditemukan", "data" => []], 200);
         }
         if ($booking['booking_status'] == 2) {
-            return $this->respond(["status" => 1, "message" => "booking sudah dibatalkan", "data" => []], 200);
+            return $this->respond(["status" => true, "message" => "booking sudah dibatalkan", "data" => []], 200);
         }
-        $update = $this->model->where(['user_email' => $user['user_email'], 'booking_no_order' => $booking_no_order])->set(['booking_status' => 2, 'booking_jml_anggota' => $booking['booking_jml_anggota'], 'booking_tgl_masuk' => $booking['booking_tgl_masuk'], 'booking_tgl_keluar' => $booking['booking_tgl_keluar']])->update();
+        $where = ['user_email' => $user['user_email'], 'booking_no_order' => $booking_no_order];
+        if ($user['is_admin']) {
+            unset($where['user_email']);
+        }
+        $update = $this->model->where($where)->set(['booking_status' => 2, 'booking_jml_anggota' => $booking['booking_jml_anggota'], 'booking_tgl_masuk' => $booking['booking_tgl_masuk'], 'booking_tgl_keluar' => $booking['booking_tgl_keluar']])->update();
         if ($update) {
             helper('locale');
-            $tgl_masuk_text = tgl_indo($booking['booking_tgl_masuk'] ?? "");
-            $tgl_keluar_text = tgl_indo($booking['booking_tgl_keluar'] ?? "");
+            $tgl_masuk_text = tgl_indo(date("Y-m-d", strtotime($booking['booking_tgl_masuk'])) ?? "");
+            $tgl_keluar_text = tgl_indo(date("Y-m-d", strtotime($booking['booking_tgl_keluar'])) ?? "");
             helper('notification');
             $user_model = new UsersModel();
             $user_emails = $user_model->where(['role' => 1])->findColumn('user_email');
             notif($user_emails, "Pembatalan Booking", "{$booking_no_order}, tanggal {$tgl_masuk_text} sampai {$tgl_keluar_text} dibatalkan.");
-            return $this->respond(["status" => 1, "message" => "berhasil membatalkan booking", "data" => []], 200);
+            return $this->respond(["status" => true, "message" => "berhasil membatalkan booking", "data" => []], 200);
         } else {
-            return $this->respond(["status" => 0, "message" => "gagal membatalkan booking", "data" => []], 400);
+            return $this->respond(["status" => false, "message" => "gagal membatalkan booking", "data" => []], 200);
         }
     }
     public function bookingHariIni()
@@ -152,7 +160,7 @@ class Booking extends ResourceController
             $sisa_seat = (int)$jumlah_pendaki - (int) $booking_seat['booking_seat_jml'];
             $jumlah_booking = (int) $booking_seat['booking_seat_jml'];
         }
-        return $this->respond(["status" => 1, "message" => "Ketersediaan hari ini", "data" => ['jumlah_booking' => $jumlah_booking, 'sisa_seat' => $sisa_seat, 'jumlah_pendaki' => (int)$jumlah_pendaki]], 200);
+        return $this->respond(["status" => true, "message" => "Ketersediaan hari ini", "data" => ['jumlah_booking' => $jumlah_booking, 'sisa_seat' => $sisa_seat, 'jumlah_pendaki' => (int)$jumlah_pendaki]], 200);
     }
     public function cekKetersediaan()
     {
@@ -189,7 +197,7 @@ class Booking extends ResourceController
 
         $validation->setRules($rules);
         if (!$validation->run($data)) {
-            return $this->respond(["status" => 0, "message" => "Validasi gagal", "data" => $validation->getErrors()], 400);
+            return $this->respond(["status" => false, "message" => "Validasi gagal", "data" => $validation->getErrors()], 200);
         }
         helper('locale');
         $tgl_masuk_text = tgl_indo($data['booking_tgl_masuk'] ?? "");
@@ -203,9 +211,9 @@ class Booking extends ResourceController
             } else {
                 $message .= "{$tgl_masuk_text} sampai {$tgl_keluar_text}";
             }
-            return $this->respond(["status" => 1, "message" => $message, "data" => []], 200);
+            return $this->respond(["status" => true, "message" => $message, "data" => []], 200);
         } catch (\Exception $th) {
-            return $this->respond(["status" => 0, "message" => $th->getMessage(), "data" => []], 400);
+            return $this->respond(["status" => false, "message" => $th->getMessage(), "data" => []], 200);
         }
     }
 }

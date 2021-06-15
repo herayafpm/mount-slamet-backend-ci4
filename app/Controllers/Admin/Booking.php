@@ -20,14 +20,14 @@ class Booking extends ResourceController
         $offset = $dataGet["offset"] ?? 0;
         $booking_status = $dataGet["booking_status"] ?? 0;
         $riwayat_booking = $this->model->filter($limit, $offset, ['where' => ['booking_status' => $booking_status]]);
-        return $this->respond(["status" => 1, "message" => "berhasil mendapatkan semua booking", "data" => $riwayat_booking], 200);
+        return $this->respond(["status" => true, "message" => "berhasil mendapatkan semua booking", "data" => $riwayat_booking], 200);
     }
     public function detail($booking_no_order)
     {
         $user = $this->request->user;
         $booking = $this->model->where(['booking_no_order' => $booking_no_order])->first();
         unset($booking['booking_id']);
-        return $this->respond(["status" => 1, "message" => "berhasil mendapatkan data booking", "data" => $booking], 200);
+        return $this->respond(["status" => true, "message" => "berhasil mendapatkan data booking", "data" => $booking], 200);
     }
     public function konfirmasi($booking_no_order)
     {
@@ -35,21 +35,18 @@ class Booking extends ResourceController
         $booking_no_order = urldecode($booking_no_order);
         $booking = $this->model->where(['booking_no_order' => $booking_no_order])->first();
         if (!$booking) {
-            return $this->respond(["status" => 0, "message" => "booking tidak ditemukan", "data" => []], 400);
-        }
-        if ($booking['booking_status'] == 2) {
-            return $this->respond(["status" => 1, "message" => "booking sudah dibatalkan", "data" => []], 200);
+            return $this->respond(["status" => false, "message" => "booking tidak ditemukan", "data" => []], 200);
         }
         $update = $this->model->where(['booking_no_order' => $booking_no_order])->set(['booking_status' => 1, 'booking_jml_anggota' => $booking['booking_jml_anggota'], 'booking_tgl_masuk' => $booking['booking_tgl_masuk'], 'booking_tgl_keluar' => $booking['booking_tgl_keluar']])->update();
         if ($update) {
             helper('locale');
-            $tgl_masuk_text = tgl_indo($booking['booking_tgl_masuk'] ?? "");
-            $tgl_keluar_text = tgl_indo($booking['booking_tgl_keluar'] ?? "");
+            $tgl_masuk_text = tgl_indo(date("Y-m-d", strtotime($booking['booking_tgl_masuk'])) ?? "");
+            $tgl_keluar_text = tgl_indo(date("Y-m-d", strtotime($booking['booking_tgl_keluar'])) ?? "");
             helper('notification');
             notif([$booking['user_email']], "Konfirmasi Booking", "{$booking_no_order}, tanggal {$tgl_masuk_text} sampai {$tgl_keluar_text} telah dikonfirmasi admin, terima kasih.");
-            return $this->respond(["status" => 1, "message" => "berhasil mengkonfirmasi booking", "data" => []], 200);
+            return $this->respond(["status" => true, "message" => "berhasil mengkonfirmasi booking", "data" => []], 200);
         } else {
-            return $this->respond(["status" => 0, "message" => "gagal mengkonfirmasi booking", "data" => []], 400);
+            return $this->respond(["status" => false, "message" => "gagal mengkonfirmasi booking", "data" => []], 200);
         }
     }
     public function laporan()
@@ -86,7 +83,7 @@ class Booking extends ResourceController
             header("Filename: $file_name");
             return $output;
         } else {
-            return $this->respond(["status" => 0, "message" => "tanggal awal harus kurang atau sama dengan dari tanggal akhir", "data" => []], 200);
+            return $this->respond(["status" => false, "message" => "tanggal awal harus kurang atau sama dengan dari tanggal akhir", "data" => []], 200);
         }
     }
 }
