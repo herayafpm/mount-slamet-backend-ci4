@@ -95,6 +95,28 @@ class BookingsModel extends Model
 			if (sizeof($insert_booking_seat_data) > 0) {
 				$booking_seat_model->insertBatch($insert_booking_seat_data);
 			}
+		} else if (in_array($status, [3])) {
+			$tgl_masuk = date("Y-m-d", strtotime($data['data']['booking_tgl_masuk']));
+			$tgl_keluar = date("Y-m-d", strtotime($data['data']['booking_tgl_keluar']));
+			helper('my_date');
+			$dates = displayDates($tgl_masuk, $tgl_keluar);
+			$booking_seat_model = new BookingSeatsModel();
+			foreach ($dates as $date) {
+				$jml = (int) $data['data']['booking_jml_anggota'];
+				$date = date("Y-m-d H:i:s", strtotime($date));
+				$booking_data = [
+					'booking_seat_tgl' => $date,
+					'booking_seat_jml' => $jml,
+				];
+				$booking_seat = $booking_seat_model->where(['booking_seat_tgl' => $date])->first();
+				if ($booking_seat) {
+					if ((int)$booking_seat['booking_seat_jml'] != 0) {
+						$jml = (int) $booking_seat['booking_seat_jml'] - $jml;
+						$booking_data['booking_seat_jml'] = $jml;
+						$booking_seat_model->update($booking_seat['booking_seat_id'], $booking_data);
+					}
+				}
+			}
 		}
 		return $data['result'];
 	}
@@ -114,6 +136,16 @@ class BookingsModel extends Model
 		$builder->select(implode(",", $fields));
 		if (isset($params['where'])) {
 			$builder->where($params['where']);
+		}
+		if (isset($params['like'])) {
+			foreach ($params['like'] as $key => $value) {
+				$builder->like($key, $value);
+			}
+		}
+		if (isset($params['where_in'])) {
+			foreach ($params['where_in'] as $key => $value) {
+				$builder->whereIn($key, $value);
+			}
 		}
 		$datas = $builder->get()->getResultArray();
 		return $datas;

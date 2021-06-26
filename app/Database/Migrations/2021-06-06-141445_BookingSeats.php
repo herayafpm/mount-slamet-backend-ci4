@@ -17,6 +17,7 @@ class BookingSeats extends Migration
 			],
 			'booking_seat_tgl'       => [
 				'type'           => 'TIMESTAMP',
+				'default'		=> '0000-00-00 00:00:00'
 			],
 			'booking_seat_jml' => [
 				'type' => 'INT',

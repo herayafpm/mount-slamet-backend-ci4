@@ -59,9 +59,11 @@ class Bookings extends Migration
 			],
 			'booking_tgl_masuk'       => [
 				'type'           => 'TIMESTAMP',
+				'default'		=> '0000-00-00 00:00:00'
 			],
 			'booking_tgl_keluar'       => [
 				'type'           => 'TIMESTAMP',
+				'default'		=> '0000-00-00 00:00:00'
 			],
 			'booking_status' => [
 				'type' => 'INT',

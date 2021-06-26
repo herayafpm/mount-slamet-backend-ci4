@@ -81,6 +81,7 @@ $routes->group('admin', ['filter' => 'auth:admin', 'namespace' => '\App\Controll
 		$routes->get('', 'Booking::index');
 		$routes->get('detail/(:any)', 'Booking::detail/$1');
 		$routes->post('konfirmasi/(:any)', 'Booking::konfirmasi/$1');
+		$routes->post('selesai/(:any)', 'Booking::selesai/$1');
 		$routes->post('laporan', 'Booking::laporan');
 		// $routes->put('', 'Booking::update_setting', ['filter' => 'auth:admin']);
 	});

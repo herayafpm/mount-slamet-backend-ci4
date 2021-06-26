@@ -100,6 +100,8 @@ class Booking extends ResourceController
         } catch (\Exception $th) {
             return $this->respond(["status" => false, "message" => $th->getMessage(), "data" => []], 200);
         }
+        $data['booking_tgl_masuk'] = date("Y-m-d", strtotime($data['booking_tgl_masuk']));
+        $data['booking_tgl_keluar'] = date("Y-m-d", strtotime($data['booking_tgl_keluar']));
         // $data['booking_status'] = 1;
         $user = $this->request->user;
         $data = array_merge($data, $user);
