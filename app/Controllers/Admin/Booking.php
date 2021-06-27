@@ -20,9 +20,14 @@ class Booking extends ResourceController
         $offset = $dataGet["offset"] ?? 0;
         $booking_status = $dataGet["booking_status"] ?? 0;
         $cari = $dataGet["cari"] ?? "";
-        $tgl_awal = date("Y-m-d H:i:s", strtotime($dataGet["booking_tgl_masuk"] ?? date("Y-m-d") . " 00:00:00"));
-        $tgl_akhir = date("Y-m-d", strtotime($dataGet["booking_tgl_keluar"] ?? date("Y-m-d") . " 23:59:59"));
-        $riwayat_booking = $this->model->filter($limit, $offset, ['where' => ['booking_status' => $booking_status, 'booking_tgl_masuk >=' => $tgl_awal, 'booking_tgl_masuk <=' => $tgl_akhir], 'like' => ['booking_no_order' => $cari]]);
+        $semua = $dataGet["semua"] ?? 1;
+        if ($semua == 1) {
+            $riwayat_booking = $this->model->filter($limit, $offset, ['where' => ['booking_status' => $booking_status], 'like' => ['booking_no_order' => $cari]]);
+        } else {
+            $tgl_awal = date("Y-m-d H:i:s", strtotime($dataGet["booking_tgl_masuk"] ?? date("Y-m-d") . " 00:00:00"));
+            $tgl_akhir = date("Y-m-d", strtotime($dataGet["booking_tgl_keluar"] ?? date("Y-m-d") . " 23:59:59"));
+            $riwayat_booking = $this->model->filter($limit, $offset, ['where' => ['booking_status' => $booking_status, 'booking_tgl_masuk >=' => $tgl_awal, 'booking_tgl_masuk <=' => $tgl_akhir], 'like' => ['booking_no_order' => $cari]]);
+        }
         return $this->respond(["status" => true, "message" => "berhasil mendapatkan semua booking", "data" => $riwayat_booking], 200);
     }
     public function detail($booking_no_order)
@@ -63,7 +68,7 @@ class Booking extends ResourceController
         if ($booking['booking_status'] != 1) {
             return $this->respond(["status" => false, "message" => "silahkan konfirmasi booking terlebih dahulu", "data" => []], 200);
         }
-        $update = $this->model->where(['booking_no_order' => $booking_no_order])->set(['booking_status' => 3, 'booking_jml_anggota' => $booking['booking_jml_anggota'], 'booking_tgl_masuk' => $booking['booking_tgl_masuk'], 'booking_tgl_keluar' => $booking['booking_tgl_keluar']])->update();
+        $update = $this->model->where(['booking_no_order' => $booking_no_order])->set(['booking_status' => 2, 'booking_jml_anggota' => $booking['booking_jml_anggota'], 'booking_tgl_masuk' => $booking['booking_tgl_masuk'], 'booking_tgl_keluar' => $booking['booking_tgl_keluar']])->update();
         if ($update) {
             helper('notification');
             notif([$booking['user_email']], "Terima Kasih", "Terima kasih sudah menggunakan jasa kami.");
@@ -83,7 +88,7 @@ class Booking extends ResourceController
         $tgl_awal = date("Y-m-d H:i:s", strtotime($tgl_awal));
         $tgl_akhir = date("Y-m-d H:i:s", strtotime($tgl_akhir . " 23:59:59"));
         if ($tgl_awal <= $tgl_akhir && $tgl_akhir >= $tgl_awal) {
-            $bookings = $this->model->filter(0, 0, ['where' => ['booking_tgl_masuk >=' => $tgl_awal, 'booking_tgl_masuk <=' => $tgl_akhir], 'where_in' => ['booking_status' => [1, 3]]]);
+            $bookings = $this->model->filter(0, 0, ['where' => ['booking_tgl_masuk >=' => $tgl_awal, 'booking_tgl_masuk <=' => $tgl_akhir], 'where_in' => ['booking_status' => [1, 2]]]);
             $tanggal_text = tgl_indo(date("Y-m-d", strtotime($tgl_awal))) . " sampai " . tgl_indo(date("Y-m-d", strtotime($tgl_akhir)));
             if ($tgl_awal === $tgl_akhir) {
                 $tanggal_text = tgl_indo(date("Y-m-d", strtotime($tgl_awal)));

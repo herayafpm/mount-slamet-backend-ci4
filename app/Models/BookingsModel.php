@@ -60,7 +60,7 @@ class BookingsModel extends Model
 	protected function insertBookingSeat($data)
 	{
 		$status = $data['data']['booking_status'] ?? 0;
-		if (in_array($status, [1, 2])) {
+		if (in_array($status, [1, 3])) {
 			$tgl_masuk = date("Y-m-d", strtotime($data['data']['booking_tgl_masuk']));
 			$tgl_keluar = date("Y-m-d", strtotime($data['data']['booking_tgl_keluar']));
 			helper('my_date');
@@ -95,7 +95,7 @@ class BookingsModel extends Model
 			if (sizeof($insert_booking_seat_data) > 0) {
 				$booking_seat_model->insertBatch($insert_booking_seat_data);
 			}
-		} else if (in_array($status, [3])) {
+		} else if (in_array($status, [2])) {
 			$tgl_masuk = date("Y-m-d", strtotime($data['data']['booking_tgl_masuk']));
 			$tgl_keluar = date("Y-m-d", strtotime($data['data']['booking_tgl_keluar']));
 			helper('my_date');

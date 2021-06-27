@@ -129,14 +129,14 @@ class Booking extends ResourceController
         if (!$booking) {
             return $this->respond(["status" => false, "message" => "booking tidak ditemukan", "data" => []], 200);
         }
-        if ($booking['booking_status'] == 2) {
+        if ($booking['booking_status'] == 3) {
             return $this->respond(["status" => true, "message" => "booking sudah dibatalkan", "data" => []], 200);
         }
         $where = ['user_email' => $user['user_email'], 'booking_no_order' => $booking_no_order];
         if ($user['is_admin']) {
             unset($where['user_email']);
         }
-        $update = $this->model->where($where)->set(['booking_status' => 2, 'booking_jml_anggota' => $booking['booking_jml_anggota'], 'booking_tgl_masuk' => $booking['booking_tgl_masuk'], 'booking_tgl_keluar' => $booking['booking_tgl_keluar']])->update();
+        $update = $this->model->where($where)->set(['booking_status' => 3, 'booking_jml_anggota' => $booking['booking_jml_anggota'], 'booking_tgl_masuk' => $booking['booking_tgl_masuk'], 'booking_tgl_keluar' => $booking['booking_tgl_keluar']])->update();
         if ($update) {
             helper('locale');
             $tgl_masuk_text = tgl_indo(date("Y-m-d", strtotime($booking['booking_tgl_masuk'])) ?? "");
