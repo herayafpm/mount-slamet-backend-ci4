@@ -76,16 +76,16 @@ class BookingsModel extends Model
 				];
 				$booking_seat = $booking_seat_model->where(['booking_seat_tgl' => $date])->first();
 				if ($booking_seat) {
-					if ((int)$booking_seat['booking_seat_jml'] != 0) {
-						if ($status == 1) {
-							$jml = (int) $booking_seat['booking_seat_jml'] + $jml;
-						}
-						if ($status == 2) {
-							$jml = (int) $booking_seat['booking_seat_jml'] - $jml;
-						}
-						$booking_data['booking_seat_jml'] = $jml;
-						$booking_seat_model->update($booking_seat['booking_seat_id'], $booking_data);
+					if ($status == 1) {
+						$jml = (int) $booking_seat['booking_seat_jml'] + $jml;
+					} else if ($status == 3 && (int) $booking_seat['booking_seat_jml'] != 0) {
+						$jml = (int) $booking_seat['booking_seat_jml'] - $jml;
 					}
+					if ($status == 3 && (int) $booking_seat['booking_seat_jml'] == 0) {
+						$jml = (int) $booking_seat['booking_seat_jml'];
+					}
+					$booking_data['booking_seat_jml'] = $jml;
+					$booking_seat_model->update($booking_seat['booking_seat_id'], $booking_data);
 				} else {
 					if ($status == 1) {
 						array_push($insert_booking_seat_data, $booking_data);
