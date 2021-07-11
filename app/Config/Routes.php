@@ -31,6 +31,10 @@ $routes->setAutoRoute(false);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
+$routes->get('blog', 'Blog::index');
+$routes->post('blog/upload_file', 'Blog::upload_file');
+$routes->post('blog/update_blog', 'Blog::update_blog');
+$routes->get('blog/data', 'Blog::data');
 $routes->group('auth', ['namespace' => '\App\Controllers\Auth'], function ($routes) {
 	$routes->group('login', function ($routes) {
 		$routes->post('', 'Login::index');
